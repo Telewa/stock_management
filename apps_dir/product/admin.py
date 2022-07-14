@@ -1,13 +1,14 @@
 from django.contrib import admin
 
-from apps_dir.product.models import Product
+from apps_dir.product.models import Product, Country, Stock
 
 
 @admin.register(Product)
-class CardAdmin(admin.ModelAdmin):
+class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "sku",
         "created_at",
         "updated_at",
     )
@@ -17,4 +18,48 @@ class CardAdmin(admin.ModelAdmin):
         "-created_at",
         "id",
     )
-    search_fields = ("name",)
+    search_fields = (
+        "name",
+        "sku",
+    )
+
+
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "code",
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = (
+        "-updated_at",
+        "-created_at",
+        "id",
+    )
+    search_fields = (
+        "name",
+        "code",
+    )
+
+
+@admin.register(Stock)
+class StockAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "product",
+        "country",
+        "number_of_items",
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = (
+        "-updated_at",
+        "-created_at",
+        "id",
+    )
+    search_fields = ("product",)
+    list_filter = ("country",)
