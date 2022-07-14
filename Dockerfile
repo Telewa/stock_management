@@ -1,0 +1,12 @@
+FROM python:3.9.9
+
+ENV PYTHONUNBUFFERED 1
+ARG REQUIREMENTS_FILE
+ARG ENVIRONMENT
+RUN apt update
+EXPOSE 8000
+
+WORKDIR /my_app
+ADD . .
+RUN pip install --upgrade pip
+RUN pip install -r $REQUIREMENTS_FILE
