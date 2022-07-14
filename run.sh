@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 python manage.py migrate
 python manage.py collectstatic  --no-input
+python manage.py create_super_user
 
 environment=${ENVIRONMENT:-staging}
 

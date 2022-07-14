@@ -1,6 +1,15 @@
 from .base import *
 import os
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CONN_MAX_AGE = 60 * 5
+SITE_DOMAIN = "localhost:3000"
+SITE_URL = f"http://{SITE_DOMAIN}"
+CSRF_TRUSTED_ORIGINS = [
+    SITE_URL,
+]
+
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
