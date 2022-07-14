@@ -114,3 +114,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "../static")
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBITMQ_DEFAULT_USER')}:{os.environ.get('RABBITMQ_DEFAULT_PASS')}@{os.environ.get('RABBITMQ_HOST')}:5672"
+CELERY_TASK_ROUTES = {
+    "update_stock": {"queue": "update_stock"},
+    "get_items_for_stock_update": {"queue": "get_items_for_stock_update"},
+}
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"

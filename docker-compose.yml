@@ -23,11 +23,12 @@ services:
       - ./.env
     volumes:
       - ./:/my_app
-    command: bash -c "./wait-for-it.sh -t 300 database:5432 && ./run.sh"
+    command: bash -c "./wait-for-it.sh -t 300 database:5432 -t 300 rabbitmq:5672 && ./run.sh"
     expose:
       - 8000
     depends_on:
       - database
+      - rabbitmq
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/api/health-check" ]
       interval: 30s
@@ -48,6 +49,45 @@ services:
 
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/api/health-check" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  ##########################################################
+  #     Queueing stuff
+  ##########################################################
+  rabbitmq:
+    container_name: rabbit
+    image: rabbitmq:3.8.16-management
+    ports:
+      - 15672:15672
+    expose:
+      - 5672
+    env_file:
+      - ./.env
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/production.txt
+        ENVIRONMENT: production
+    command: bash -c "./wait-for-it.sh -t 300 database:5432 -t 300 rabbitmq:5672 && ./worker.sh"
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/my_app
+    depends_on:
+      - rabbitmq
+      - database
+    healthcheck:
+      test: celery -A configuration inspect ping
       interval: 30s
       timeout: 20s
       retries: 3

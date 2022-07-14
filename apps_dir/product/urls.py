@@ -1,9 +1,7 @@
-from django.contrib import admin
-from django.urls import path, include
-from configuration.views import HealthCheck
+from django.urls import path
+from .views import ProductView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("api/products/", include("apps_dir.product.urls")),
-    path("api/health-check/", HealthCheck.as_view(), name="health-check"),
+    path("", ProductView.as_view(), name="products"),
+    path("<str:sku>/", ProductView.as_view(), name="products"),
 ]

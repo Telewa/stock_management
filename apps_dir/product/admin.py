@@ -61,5 +61,8 @@ class StockAdmin(admin.ModelAdmin):
         "-created_at",
         "id",
     )
-    search_fields = ("product",)
+    search_fields = (
+        "product__sku",
+        "product__name",
+    )
     list_filter = ("country",)
