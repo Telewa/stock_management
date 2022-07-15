@@ -13,13 +13,12 @@ logger = getLogger(__file__)
 @shared_task(bind=True, name="update_stock")
 def update_stock(self, sku, product_name, country_code, stock_change):
     stock_change = int(stock_change)
+    product, _ = Product.objects.get_or_create(
+        sku=sku, defaults=dict(name=product_name)
+    )
+    country: Country = Country.objects.get(code=country_code.upper())
 
     with transaction.atomic():
-        product, _ = Product.objects.get_or_create(
-            sku=sku, defaults=dict(name=product_name)
-        )
-        country: Country = Country.objects.get(code=country_code.upper())
-
         stock, created = Stock.objects.get_or_create(
             product=product, country=country, defaults={"number_of_items": stock_change}
         )

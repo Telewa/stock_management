@@ -1,2 +1,0 @@
--r base.txt
-pre-commit==2.16.0

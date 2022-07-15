@@ -14,7 +14,6 @@ repos:
       args: ['--fix=lf']
       description: Forces to replace line ending by the UNIX 'lf' character.
     - id: requirements-txt-fixer
-      args: [ requirements/base.txt, requirements/development.txt, requirements/production.txt ]
     - id: debug-statements
   - repo: https://github.com/ambv/black
     rev: 22.3.0

@@ -16,9 +16,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        REQUIREMENTS_FILE: requirements/production.txt
-        ENVIRONMENT: production
     env_file:
       - ./.env
     volumes:
@@ -35,6 +32,9 @@ services:
       timeout: 20s
       retries: 3
 
+  ##########################################################
+  #     Main Load balancer
+  ##########################################################
   nginx:
     image: nginx
     volumes:
@@ -57,7 +57,7 @@ services:
   #     Queueing stuff
   ##########################################################
   rabbitmq:
-    container_name: rabbit
+    container_name: rabbit # do not remove
     image: rabbitmq:3.8.16-management
     ports:
       - 15672:15672
@@ -75,9 +75,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        REQUIREMENTS_FILE: requirements/production.txt
-        ENVIRONMENT: production
     command: bash -c "./wait-for-it.sh -t 300 database:5432 -t 300 rabbitmq:5672 && ./worker.sh"
     env_file:
       - ./.env

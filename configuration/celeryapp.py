@@ -8,7 +8,7 @@ from configuration.utils import set_running_environment
 
 set_running_environment()
 
-app = Celery("products_management")
+app = Celery("configuration")
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)

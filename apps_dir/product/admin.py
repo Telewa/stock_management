@@ -14,8 +14,9 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     ordering = (
-        "-updated_at",
-        "-created_at",
+        "name",
+        "created_at",
+        "updated_at",
         "id",
     )
     search_fields = (
@@ -35,9 +36,11 @@ class CountryAdmin(admin.ModelAdmin):
     )
 
     ordering = (
-        "-updated_at",
+        "name",
+        "code",
         "-created_at",
-        "id",
+        "-updated_at",
+        # "id",
     )
     search_fields = (
         "name",

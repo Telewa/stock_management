@@ -1,0 +1,8 @@
+celery==5.2.3
+Django==4.0.2
+djangorestframework==3.13.1
+gunicorn==20.1.0
+parameterized==0.8.1
+pre-commit==2.16.0  # only needed in development
+psycopg2==2.9.3
+structlog==21.5.0
