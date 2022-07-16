@@ -95,7 +95,6 @@ class ProductViewTest(TestCase):
                 "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
             """
         )
-        # When we upload a CSV file
         self.upload_csv(csv_content)
 
         product = Product.objects.last()
@@ -103,6 +102,26 @@ class ProductViewTest(TestCase):
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.json(), {"sku": product.sku, "name": product.name})
+
+    def test_get_product_by_incorrect_id(self):
+        # Given that we have these items in store
+        csv_content = textwrap.dedent(
+            """
+                country,sku,name,stock_change
+                "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
+                "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
+                "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
+                "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
+            """
+        )
+        self.upload_csv(csv_content)
+
+        product = Product.objects.last()
+        resp = self.client.get(
+            path=reverse("product", kwargs={"sku": product.sku + "_mistake"})
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_that_stock_can_be_consumed(self):
         # Given that we have some stock
@@ -115,7 +134,7 @@ class ProductViewTest(TestCase):
                 "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
                 "dz","cbf87a9be799","Foster-Harrell Table","47"
                 "eg","cbf87a9be799","Foster-Harrell Table","35"
-                "ke","cbf87a9be799","Foster-Harrell Table","5"
+                "ke","cbf87a9be799","Foster-Harrell Table","50"
                 "ma","cbf87a9be799","Foster-Harrell Table","56"
                 "ng","cbf87a9be799","Foster-Harrell Table","29"
             """
@@ -123,21 +142,41 @@ class ProductViewTest(TestCase):
         self.upload_csv(csv_content)
         self.assertEqual(Product.objects.count(), 2)
 
-        # When we consume a product
-        resp = self.client.post(
-            path=f"{reverse('consume-product', kwargs={'sku': 'cbf87a9be799', 'country_code': 'ke'})}?required_count=5"
-        )
+        stock_item = Stock.objects.filter(
+            product__sku="cbf87a9be799", country__code="KE"
+        ).last()
+        self.assertIsNotNone(stock_item)
 
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        reduction_factor = 5
 
-        # then we should have 0 items left
-        self.assertEqual(
-            Stock.objects.filter(product__sku="sku", country__code="KE").count(), 0
-        )
+        # for easy calculation, this has to be true
+        assert stock_item.number_of_items % reduction_factor == 0
+
+        #  we an reduce the number of items progressively
+        while stock_item.number_of_items > 0:
+            next_count_should_be = stock_item.number_of_items - reduction_factor
+
+            # When we consume a product
+            resp = self.client.post(
+                path=f"{reverse('consume-product', kwargs={'sku': stock_item.product.sku, 'country_code': stock_item.country.code})}?required_count={reduction_factor}"
+            )
+
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+            # then we should have 'reduction_factor' fewer items left
+            self.assertEqual(
+                Stock.objects.get(
+                    product__sku=stock_item.product.sku,
+                    country__code=stock_item.country.code,
+                ).number_of_items,
+                next_count_should_be,
+            )
+
+            stock_item.refresh_from_db()
 
         # and if we try again then we should indeed not have any mire stock left
         resp = self.client.post(
-            path=f"{reverse('consume-product', kwargs={'sku': 'cbf87a9be799', 'country_code': 'ke'})}?required_count=5"
+            path=f"{reverse('consume-product', kwargs={'sku': stock_item.product.sku, 'country_code': stock_item.country.code})}?required_count={reduction_factor}"
         )
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -146,12 +185,12 @@ class ProductViewTest(TestCase):
             (
                 textwrap.dedent(
                     """
-                        country,sku,name,stock_change
-                        "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
-                        "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
-                        "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
-                        "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
-                    """
+                            country,sku,name,stock_change
+                            "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
+                            "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
+                            "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
+                            "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
+                        """
                 ),
                 1,
                 4,
@@ -162,13 +201,13 @@ class ProductViewTest(TestCase):
             (
                 textwrap.dedent(
                     """
-                        country,sku,name,stock_change
-                        "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
-                        "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
-                        "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
-                        "ke","e920c573f128","Ramirez-Molina Granite Pizza","-5"
-                        "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
-                    """
+                            country,sku,name,stock_change
+                            "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
+                            "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
+                            "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
+                            "ke","e920c573f128","Ramirez-Molina Granite Pizza","-5"
+                            "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
+                        """
                 ),
                 1,
                 4,
@@ -179,13 +218,13 @@ class ProductViewTest(TestCase):
             (
                 textwrap.dedent(
                     """
-                        country,sku,name,stock_change
-                        "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
-                        "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
-                        "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
-                        "ke","e920c573f129","Ramirez-Molina Granite Pizza hut","5"
-                        "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
-                    """
+                            country,sku,name,stock_change
+                            "dz","e920c573f128","Ramirez-Molina Granite Pizza","32"
+                            "gh","e920c573f128","Ramirez-Molina Granite Pizza","51"
+                            "ke","e920c573f128","Ramirez-Molina Granite Pizza","58"
+                            "ke","e920c573f129","Ramirez-Molina Granite Pizza hut","5"
+                            "ug","e920c573f128","Ramirez-Molina Granite Pizza","63"
+                        """
                 ),
                 2,
                 5,
