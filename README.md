@@ -22,12 +22,16 @@ It manages products and their stock with the following requirements:
         - View: https://github.com/Telewa/stock_management/blob/fd16b27c1f4898f0f5b0fc43297fa21870f0013f/apps_dir/product/views.py#L41
         - Tests:
           - (Test for consuming a product progressively until there is no more left](https://github.com/Telewa/stock_management/blob/master/apps_dir/product/tests/tests.py#L126)
-    
-2. It has an API that allows bulk update of products from a CSV. 
-   1. Foreach CSV line, the stock update could bepositive or negative. 
+
+2. It has an API that allows bulk update of products from a CSV.
+   1. Foreach CSV line, the stock update could bepositive or negative.
    2. If a product doesn't exist, it creates it.
     - URL: https://github.com/Telewa/stock_management/blob/master/apps_dir/product/urls.py#L5
     - View: https://github.com/Telewa/stock_management/blob/fd16b27c1f4898f0f5b0fc43297fa21870f0013f/apps_dir/product/views.py#L57
-    - Tests: 
+    - Tests:
       - (Test for file upload and product creation)[https://github.com/Telewa/stock_management/blob/master/apps_dir/product/tests/tests.py#L36]
       - (Test for updating already extisting stock)[https://github.com/Telewa/stock_management/blob/master/apps_dir/product/tests/tests.py#L237]
+
+**DEMO:**
+
+[![Stock Management demo](https://user-images.githubusercontent.com/3075901/179489221-b71a910e-5911-4fe7-882f-ff5a5f37c3c4.png)](https://youtu.be/7ThatZHUPpo)
